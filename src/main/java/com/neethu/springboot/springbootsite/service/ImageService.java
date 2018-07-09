@@ -8,10 +8,13 @@ import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
@@ -38,6 +41,10 @@ public class ImageService {
 		return resourceLoder.getResource("file:" + UPLOAD_ROOT + "/" + fileName);
 	}
 	
+	public Page<Image> findPage(Pageable pageable){
+		return imageRepo.findAll(pageable);
+	}
+	
 	public void createImage(MultipartFile file) throws IOException{
 		if(!file.isEmpty()){
 			Files.copy(file.getInputStream(), Paths.get(UPLOAD_ROOT, file.getOriginalFilename()));
@@ -52,8 +59,8 @@ public class ImageService {
 	}
 	
 	@Bean
-	@Profile("dev")
-	CommandLineRunner setUp(ImageRepository repo) throws IOException{
+	//@Profile("dev")
+	CommandLineRunner setUp(ImageRepository repo, ConditionEvaluationReport report) throws IOException{
 		
 		return (args) -> {
 			FileSystemUtils.deleteRecursively(new File(UPLOAD_ROOT));
@@ -65,7 +72,7 @@ public class ImageService {
 			repo.save(new Image("test2"));
 			
 			FileCopyUtils.copy("Test file3", new FileWriter(UPLOAD_ROOT + "/test3"));
-			repo.save(new Image("test3"));
+			repo.save(new Image("test3"));			
 		};
 	}
 }
